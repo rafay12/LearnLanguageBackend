@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { db } from '../prisma/db.js';
 
 @Injectable()
@@ -13,6 +14,19 @@ export class EnrollmentsRepository {
 
   findEnrollment(userId: number, courseId: number) {
     return db.orm.public.UserCourse.first({
+      userId,
+      courseId,
+    });
+  }
+
+  findCourse(courseId: number) {
+    return db.orm.public.Course.first({
+      id: courseId,
+    });
+  }
+
+  create(userId: number, courseId: number) {
+    return db.orm.public.UserCourse.create({
       userId,
       courseId,
     });

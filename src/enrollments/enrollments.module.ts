@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 
+import { AuthModule } from '../auth/auth.module.js';
+
 import { EnrollmentsController } from './enrollments.controller.js';
-import { EnrollmentsService } from './enrollments.service.js';
 import { EnrollmentsRepository } from './enrollments.repository.js';
+import { EnrollmentsService } from './enrollments.service.js';
 
 @Module({
+  imports: [AuthModule],
   controllers: [EnrollmentsController],
   providers: [EnrollmentsService, EnrollmentsRepository],
 })
