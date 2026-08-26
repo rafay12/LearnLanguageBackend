@@ -6,6 +6,9 @@ import { LessonsRepository } from './lessons.repository.js';
 
 @Module({
   controllers: [LessonsController],
+
   providers: [LessonsService, LessonsRepository],
+
+  exports: [LessonsService],
 })
 export class LessonsModule {}
