@@ -3648,7 +3648,14 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "userId",
+                    "courseId"
+                  ]
+                }
+              ]
             },
             "userExerciseAttempt": {
               "columns": {
@@ -4381,7 +4388,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "94554416bdbaa6baa76c54920b6b39f69e478ebb9fa76f82fcedd5beae25ce5f"
+    "storageHash": "1b80cfca06f1170db2264a6348960c0873ece5d431bedfcee4f241aa4c984023"
   },
   "execution": {
     "executionHash": "177019c8b6cdaf5eda2b81969ed11c22741ca9be2c491adcfd5835c50181420e",

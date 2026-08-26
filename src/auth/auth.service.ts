@@ -37,7 +37,7 @@ export class AuthService {
 
     return user;
   }
-  
+
   async login(dto: LoginDto) {
     const user = await this.validateUser(dto.email, dto.password);
 

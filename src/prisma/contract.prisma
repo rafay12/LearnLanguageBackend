@@ -225,6 +225,8 @@ model UserCourseProgress {
 
   user   User   @relation(fields: [userId], references: [id])
   course Course @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
 }
 
 model UserLessonProgress {

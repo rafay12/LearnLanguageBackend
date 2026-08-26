@@ -10,5 +10,6 @@ import { LessonProgressService } from './lesson-progress.service.js';
   imports: [AuthModule],
   controllers: [LessonProgressController],
   providers: [LessonProgressService, LessonProgressRepository],
+  exports: [LessonProgressService],
 })
 export class LessonProgressModule {}
