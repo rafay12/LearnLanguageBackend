@@ -13,6 +13,7 @@ import { VocabularyModule } from './vocabulary/vocabulary.module.js';
 import { LessonVocabularyModule } from './lesson-vocabulary/lesson-vocabulary.module.js';
 import { EnrollmentsModule } from './enrollments/enrollments.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { LessonProgressModule } from './lesson-progress/lesson-progress.module.js';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { AuthModule } from './auth/auth.module.js';
     LessonVocabularyModule,
     EnrollmentsModule,
     AuthModule,
+    LessonProgressModule,
   ],
 })
 export class AppModule {}

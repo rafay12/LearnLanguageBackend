@@ -31,4 +31,24 @@ export class EnrollmentsRepository {
       courseId,
     });
   }
+
+  async findCourseLessons(courseId: number) {
+    const units = await db.orm.public.Unit.where({ courseId }).all();
+
+    const lessons = [];
+
+    for (const unit of units) {
+      const unitLessons = await db.orm.public.Lesson.where({
+        unitId: unit.id,
+      }).all();
+
+      lessons.push(...unitLessons);
+    }
+
+    return lessons;
+  }
+
+  findUserLessonProgress(userId: number) {
+    return db.orm.public.UserLessonProgress.where({ userId }).all();
+  }
 }

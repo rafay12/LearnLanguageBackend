@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { EnrollmentsRepository } from './enrollments.repository.js';
 
@@ -18,26 +14,61 @@ export class EnrollmentsService {
     return this.repository.findByCourseId(courseId);
   }
 
-  findEnrollment(userId: number, courseId: number) {
-    return this.repository.findEnrollment(userId, courseId);
+  async isEnrolled(userId: number, courseId: number) {
+    const enrollment = await this.repository.findEnrollment(userId, courseId);
+
+    return {
+      enrolled: !!enrollment,
+    };
   }
 
   async enroll(userId: number, courseId: number) {
-    const course = await this.repository.findCourse(courseId);
+    const existing = await this.repository.findEnrollment(userId, courseId);
 
-    if (!course) {
-      throw new NotFoundException('Course not found');
-    }
-
-    const existingEnrollment = await this.repository.findEnrollment(
-      userId,
-      courseId,
-    );
-
-    if (existingEnrollment) {
-      throw new ConflictException('User is already enrolled in this course');
+    if (existing) {
+      return existing;
     }
 
     return this.repository.create(userId, courseId);
+  }
+
+  async getCourseProgress(userId: number, courseId: number) {
+    const enrollment = await this.repository.findEnrollment(userId, courseId);
+
+    if (!enrollment) {
+      throw new NotFoundException('User is not enrolled in this course');
+    }
+
+    const lessons = await this.repository.findCourseLessons(courseId);
+
+    const progress = await this.repository.findUserLessonProgress(userId);
+
+    if (lessons.length === 0) {
+      return {
+        courseId,
+        totalLessons: 0,
+        completedLessons: 0,
+        progress: 0,
+      };
+    }
+
+    const lessonIds = new Set(lessons.map((lesson) => lesson.id));
+
+    const completedLessons = progress.filter(
+      (item) => lessonIds.has(item.lessonId) && item.status === 'completed',
+    ).length;
+
+    const percentage = Math.round((completedLessons / lessons.length) * 100);
+
+    return {
+      courseId,
+      totalLessons: lessons.length,
+      completedLessons,
+      progress: percentage,
+    };
+  }
+
+  async findEnrollment(userId: number, courseId: number) {
+    return this.repository.findEnrollment(userId, courseId);
   }
 }

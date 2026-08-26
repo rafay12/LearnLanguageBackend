@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  Req,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -50,5 +51,15 @@ export class EnrollmentsController {
     courseId: number,
   ) {
     return this.service.findEnrollment(userId, courseId);
+  }
+
+  @Get('progress')
+  @UseGuards(JwtAuthGuard)
+  getCourseProgress(
+    @Req() request: any,
+    @Query('courseId', ParseIntPipe)
+    courseId: number,
+  ) {
+    return this.service.getCourseProgress(request.user.sub, courseId);
   }
 }
