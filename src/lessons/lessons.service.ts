@@ -24,14 +24,6 @@ export class LessonsService {
     return this.repository.findByUnitId(unitId);
   }
 
-  /**
-   * Returns everything required by the
-   * lesson-learning screen.
-   *
-   * The frontend should not need to make
-   * individual requests for every vocabulary
-   * item and translation.
-   */
   async getLearningData(id: number) {
     const lesson = await this.repository.findById(id);
 
@@ -84,8 +76,7 @@ export class LessonsService {
       });
     }
 
-    const exercises =
-      await this.repository.findExercises(id);
+    const exercises = await this.repository.findExercises(id);
 
     const exerciseData = [];
 
@@ -94,25 +85,18 @@ export class LessonsService {
         continue;
       }
 
-      const options =
-        await this.repository.findExerciseOptions(
-          exercise.id,
-        );
+      const options = await this.repository.findExerciseOptions(exercise.id);
 
       exerciseData.push({
         id: exercise.id,
         number: exercise.number,
         type: exercise.type,
         question: exercise.question,
-        explanation:
-        exercise.explanation,
+        explanation: exercise.explanation,
         points: exercise.points,
 
         options: options
-          .sort(
-            (a, b) =>
-              a.number - b.number,
-          )
+          .sort((a, b) => a.number - b.number)
           .map((option) => ({
             id: option.id,
             number: option.number,
@@ -121,4 +105,13 @@ export class LessonsService {
           })),
       });
     }
+
+    exerciseData.sort((a, b) => a.number - b.number);
+
+    return {
+      lesson,
+      vocabulary,
+      exercises: exerciseData,
+    };
+  }
 }
