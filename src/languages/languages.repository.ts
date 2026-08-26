@@ -6,4 +6,8 @@ export class LanguagesRepository {
   async findAll() {
     return db.orm.public.Language.all();
   }
+
+  async findById(id: number) {
+    return db.orm.public.Language.first({ id });
+  }
 }
