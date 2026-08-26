@@ -32,12 +32,28 @@
       "model": "Lesson",
       "namespace": "public"
     },
+    "lessonVocabulary": {
+      "model": "LessonVocabulary",
+      "namespace": "public"
+    },
+    "unit": {
+      "model": "Unit",
+      "namespace": "public"
+    },
     "user": {
       "model": "User",
       "namespace": "public"
     },
+    "userCourse": {
+      "model": "UserCourse",
+      "namespace": "public"
+    },
     "userCourseProgress": {
       "model": "UserCourseProgress",
+      "namespace": "public"
+    },
+    "userExerciseAttempt": {
+      "model": "UserExerciseAttempt",
       "namespace": "public"
     },
     "userLanguage": {
@@ -67,6 +83,13 @@
         "models": {
           "Course": {
             "fields": {
+              "code": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -88,31 +111,24 @@
                   "kind": "scalar"
                 }
               },
-              "isPublished": {
+              "isActive": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/bool@1",
                   "kind": "scalar"
                 }
               },
+              "languageVariantId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "level": {
-                "nullable": true,
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "sourceLanguageId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "targetLanguageId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -132,7 +148,7 @@
               }
             },
             "relations": {
-              "courseProgress": {
+              "enrollments": {
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
@@ -143,11 +159,26 @@
                   ]
                 },
                 "to": {
-                  "model": "UserCourseProgress",
+                  "model": "UserCourse",
                   "namespace": "public"
                 }
               },
-              "lessons": {
+              "languageVariant": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "languageVariantId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "LanguageVariant",
+                  "namespace": "public"
+                }
+              },
+              "units": {
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
@@ -158,43 +189,16 @@
                   ]
                 },
                 "to": {
-                  "model": "Lesson",
-                  "namespace": "public"
-                }
-              },
-              "sourceLanguage": {
-                "cardinality": "N:1",
-                "on": {
-                  "localFields": [
-                    "sourceLanguageId"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "Language",
-                  "namespace": "public"
-                }
-              },
-              "targetLanguage": {
-                "cardinality": "N:1",
-                "on": {
-                  "localFields": [
-                    "targetLanguageId"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "Language",
+                  "model": "Unit",
                   "namespace": "public"
                 }
               }
             },
             "storage": {
               "fields": {
+                "code": {
+                  "column": "code"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -204,17 +208,14 @@
                 "id": {
                   "column": "id"
                 },
-                "isPublished": {
-                  "column": "isPublished"
+                "isActive": {
+                  "column": "isActive"
+                },
+                "languageVariantId": {
+                  "column": "languageVariantId"
                 },
                 "level": {
                   "column": "level"
-                },
-                "sourceLanguageId": {
-                  "column": "sourceLanguageId"
-                },
-                "targetLanguageId": {
-                  "column": "targetLanguageId"
                 },
                 "title": {
                   "column": "title"
@@ -229,6 +230,13 @@
           },
           "Exercise": {
             "fields": {
+              "answer": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -250,6 +258,13 @@
                   "kind": "scalar"
                 }
               },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "lessonId": {
                 "nullable": false,
                 "type": {
@@ -257,7 +272,14 @@
                   "kind": "scalar"
                 }
               },
-              "position": {
+              "number": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "points": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
@@ -287,6 +309,21 @@
               }
             },
             "relations": {
+              "attempts": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "exerciseId"
+                  ]
+                },
+                "to": {
+                  "model": "UserExerciseAttempt",
+                  "namespace": "public"
+                }
+              },
               "lesson": {
                 "cardinality": "N:1",
                 "on": {
@@ -320,6 +357,9 @@
             },
             "storage": {
               "fields": {
+                "answer": {
+                  "column": "answer"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -329,11 +369,17 @@
                 "id": {
                   "column": "id"
                 },
+                "isActive": {
+                  "column": "isActive"
+                },
                 "lessonId": {
                   "column": "lessonId"
                 },
-                "position": {
-                  "column": "position"
+                "number": {
+                  "column": "number"
+                },
+                "points": {
+                  "column": "points"
                 },
                 "question": {
                   "column": "question"
@@ -351,6 +397,13 @@
           },
           "ExerciseOption": {
             "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
               "exerciseId": {
                 "nullable": false,
                 "type": {
@@ -372,14 +425,28 @@
                   "kind": "scalar"
                 }
               },
-              "position": {
+              "label": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "number": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
-              "text": {
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "value": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
@@ -406,6 +473,9 @@
             },
             "storage": {
               "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
                 "exerciseId": {
                   "column": "exerciseId"
                 },
@@ -415,11 +485,17 @@
                 "isCorrect": {
                   "column": "isCorrect"
                 },
-                "position": {
-                  "column": "position"
+                "label": {
+                  "column": "label"
                 },
-                "text": {
-                  "column": "text"
+                "number": {
+                  "column": "number"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "value": {
+                  "column": "value"
                 }
               },
               "namespaceId": "public",
@@ -439,6 +515,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "direction": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -479,66 +562,6 @@
               }
             },
             "relations": {
-              "names": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "languageId"
-                  ]
-                },
-                "to": {
-                  "model": "LanguageName",
-                  "namespace": "public"
-                }
-              },
-              "sourceCourses": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "sourceLanguageId"
-                  ]
-                },
-                "to": {
-                  "model": "Course",
-                  "namespace": "public"
-                }
-              },
-              "targetCourses": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "targetLanguageId"
-                  ]
-                },
-                "to": {
-                  "model": "Course",
-                  "namespace": "public"
-                }
-              },
-              "userLanguages": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "languageId"
-                  ]
-                },
-                "to": {
-                  "model": "UserLanguage",
-                  "namespace": "public"
-                }
-              },
               "variants": {
                 "cardinality": "1:N",
                 "on": {
@@ -553,6 +576,36 @@
                   "model": "LanguageVariant",
                   "namespace": "public"
                 }
+              },
+              "vocabularies": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "languageId"
+                  ]
+                },
+                "to": {
+                  "model": "Vocabulary",
+                  "namespace": "public"
+                }
+              },
+              "vocabularyTranslations": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "languageId"
+                  ]
+                },
+                "to": {
+                  "model": "VocabularyTranslation",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -562,6 +615,9 @@
                 },
                 "createdAt": {
                   "column": "createdAt"
+                },
+                "direction": {
+                  "column": "direction"
                 },
                 "id": {
                   "column": "id"
@@ -702,6 +758,13 @@
                 }
               },
               "nativeName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "region": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
@@ -717,6 +780,21 @@
               }
             },
             "relations": {
+              "courses": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "languageVariantId"
+                  ]
+                },
+                "to": {
+                  "model": "Course",
+                  "namespace": "public"
+                }
+              },
               "language": {
                 "cardinality": "N:1",
                 "on": {
@@ -759,6 +837,9 @@
                 "nativeName": {
                   "column": "nativeName"
                 },
+                "region": {
+                  "column": "region"
+                },
                 "updatedAt": {
                   "column": "updatedAt"
                 }
@@ -768,6 +849,280 @@
             }
           },
           "Lesson": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "description": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "number": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "title": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "unitId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "exercises": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "lessonId"
+                  ]
+                },
+                "to": {
+                  "model": "Exercise",
+                  "namespace": "public"
+                }
+              },
+              "unit": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "unitId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Unit",
+                  "namespace": "public"
+                }
+              },
+              "userProgress": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "lessonId"
+                  ]
+                },
+                "to": {
+                  "model": "UserLessonProgress",
+                  "namespace": "public"
+                }
+              },
+              "vocabulary": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "lessonId"
+                  ]
+                },
+                "to": {
+                  "model": "LessonVocabulary",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "description": {
+                  "column": "description"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isActive": {
+                  "column": "isActive"
+                },
+                "number": {
+                  "column": "number"
+                },
+                "title": {
+                  "column": "title"
+                },
+                "type": {
+                  "column": "type"
+                },
+                "unitId": {
+                  "column": "unitId"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "lesson"
+            }
+          },
+          "LessonVocabulary": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "isRequired": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "lessonId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "position": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "vocabularyId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "lesson": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "lessonId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Lesson",
+                  "namespace": "public"
+                }
+              },
+              "vocabulary": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "vocabularyId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Vocabulary",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isRequired": {
+                  "column": "isRequired"
+                },
+                "lessonId": {
+                  "column": "lessonId"
+                },
+                "position": {
+                  "column": "position"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "vocabularyId": {
+                  "column": "vocabularyId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "lessonVocabulary"
+            }
+          },
+          "Unit": {
             "fields": {
               "courseId": {
                 "nullable": false,
@@ -797,14 +1152,14 @@
                   "kind": "scalar"
                 }
               },
-              "isPublished": {
+              "isActive": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/bool@1",
                   "kind": "scalar"
                 }
               },
-              "position": {
+              "number": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
@@ -842,48 +1197,18 @@
                   "namespace": "public"
                 }
               },
-              "exercises": {
+              "lessons": {
                 "cardinality": "1:N",
                 "on": {
                   "localFields": [
                     "id"
                   ],
                   "targetFields": [
-                    "lessonId"
+                    "unitId"
                   ]
                 },
                 "to": {
-                  "model": "Exercise",
-                  "namespace": "public"
-                }
-              },
-              "progress": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "lessonId"
-                  ]
-                },
-                "to": {
-                  "model": "UserLessonProgress",
-                  "namespace": "public"
-                }
-              },
-              "vocabulary": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "lessonId"
-                  ]
-                },
-                "to": {
-                  "model": "Vocabulary",
+                  "model": "Lesson",
                   "namespace": "public"
                 }
               }
@@ -902,11 +1227,11 @@
                 "id": {
                   "column": "id"
                 },
-                "isPublished": {
-                  "column": "isPublished"
+                "isActive": {
+                  "column": "isActive"
                 },
-                "position": {
-                  "column": "position"
+                "number": {
+                  "column": "number"
                 },
                 "title": {
                   "column": "title"
@@ -916,7 +1241,7 @@
                 }
               },
               "namespaceId": "public",
-              "table": "lesson"
+              "table": "unit"
             }
           },
           "User": {
@@ -944,6 +1269,13 @@
               },
               "name": {
                 "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "passwordHash": {
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -977,6 +1309,36 @@
                 },
                 "to": {
                   "model": "UserCourseProgress",
+                  "namespace": "public"
+                }
+              },
+              "courses": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "UserCourse",
+                  "namespace": "public"
+                }
+              },
+              "exerciseAttempts": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "UserExerciseAttempt",
                   "namespace": "public"
                 }
               },
@@ -1040,6 +1402,9 @@
                 "name": {
                   "column": "name"
                 },
+                "passwordHash": {
+                  "column": "passwordHash"
+                },
                 "updatedAt": {
                   "column": "updatedAt"
                 },
@@ -1049,6 +1414,138 @@
               },
               "namespaceId": "public",
               "table": "user"
+            }
+          },
+          "UserCourse": {
+            "fields": {
+              "completedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "courseId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "progress": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "startedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "course": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "courseId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Course",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "completedAt": {
+                  "column": "completedAt"
+                },
+                "courseId": {
+                  "column": "courseId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "progress": {
+                  "column": "progress"
+                },
+                "startedAt": {
+                  "column": "startedAt"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "userCourse"
             }
           },
           "UserCourseProgress": {
@@ -1153,6 +1650,138 @@
               "table": "userCourseProgress"
             }
           },
+          "UserExerciseAttempt": {
+            "fields": {
+              "answer": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "attemptedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "exerciseId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "isCorrect": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "score": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "exercise": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "exerciseId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Exercise",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "answer": {
+                  "column": "answer"
+                },
+                "attemptedAt": {
+                  "column": "attemptedAt"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "exerciseId": {
+                  "column": "exerciseId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isCorrect": {
+                  "column": "isCorrect"
+                },
+                "score": {
+                  "column": "score"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "userExerciseAttempt"
+            }
+          },
           "UserLanguage": {
             "fields": {
               "createdAt": {
@@ -1247,10 +1876,17 @@
           },
           "UserLessonProgress": {
             "fields": {
-              "completed": {
+              "completedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/bool@1",
+                  "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
                 }
               },
@@ -1272,6 +1908,27 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "score": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "startedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -1324,8 +1981,11 @@
             },
             "storage": {
               "fields": {
-                "completed": {
-                  "column": "completed"
+                "completedAt": {
+                  "column": "completedAt"
+                },
+                "createdAt": {
+                  "column": "createdAt"
                 },
                 "id": {
                   "column": "id"
@@ -1335,6 +1995,15 @@
                 },
                 "progress": {
                   "column": "progress"
+                },
+                "score": {
+                  "column": "score"
+                },
+                "startedAt": {
+                  "column": "startedAt"
+                },
+                "status": {
+                  "column": "status"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -1353,6 +2022,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
                 }
               },
@@ -1377,13 +2053,6 @@
                   "kind": "scalar"
                 }
               },
-              "mastery": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
               "nextReviewAt": {
                 "nullable": true,
                 "type": {
@@ -1391,7 +2060,14 @@
                   "kind": "scalar"
                 }
               },
-              "reviewCount": {
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "strength": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
@@ -1457,6 +2133,9 @@
                 "correctCount": {
                   "column": "correctCount"
                 },
+                "createdAt": {
+                  "column": "createdAt"
+                },
                 "id": {
                   "column": "id"
                 },
@@ -1466,14 +2145,14 @@
                 "lastReviewedAt": {
                   "column": "lastReviewedAt"
                 },
-                "mastery": {
-                  "column": "mastery"
-                },
                 "nextReviewAt": {
                   "column": "nextReviewAt"
                 },
-                "reviewCount": {
-                  "column": "reviewCount"
+                "status": {
+                  "column": "status"
+                },
+                "strength": {
+                  "column": "strength"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -1491,6 +2170,13 @@
           },
           "Vocabulary": {
             "fields": {
+              "audioUrl": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -1512,10 +2198,24 @@
                   "kind": "scalar"
                 }
               },
-              "lessonId": {
+              "imageUrl": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "languageId": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "normalizedWord": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -1527,13 +2227,6 @@
                 }
               },
               "pronunciation": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "transliteration": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
@@ -1556,18 +2249,33 @@
               }
             },
             "relations": {
-              "lesson": {
+              "language": {
                 "cardinality": "N:1",
                 "on": {
                   "localFields": [
-                    "lessonId"
+                    "languageId"
                   ],
                   "targetFields": [
                     "id"
                   ]
                 },
                 "to": {
-                  "model": "Lesson",
+                  "model": "Language",
+                  "namespace": "public"
+                }
+              },
+              "lessons": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "vocabularyId"
+                  ]
+                },
+                "to": {
+                  "model": "LessonVocabulary",
                   "namespace": "public"
                 }
               },
@@ -1604,6 +2312,9 @@
             },
             "storage": {
               "fields": {
+                "audioUrl": {
+                  "column": "audioUrl"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -1613,17 +2324,20 @@
                 "id": {
                   "column": "id"
                 },
-                "lessonId": {
-                  "column": "lessonId"
+                "imageUrl": {
+                  "column": "imageUrl"
+                },
+                "languageId": {
+                  "column": "languageId"
+                },
+                "normalizedWord": {
+                  "column": "normalizedWord"
                 },
                 "partOfSpeech": {
                   "column": "partOfSpeech"
                 },
                 "pronunciation": {
                   "column": "pronunciation"
-                },
-                "transliteration": {
-                  "column": "transliteration"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -1638,6 +2352,13 @@
           },
           "VocabularyTranslation": {
             "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -1645,8 +2366,15 @@
                   "kind": "scalar"
                 }
               },
-              "notes": {
-                "nullable": true,
+              "languageId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "normalizedTranslation": {
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -1659,6 +2387,13 @@
                   "kind": "scalar"
                 }
               },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
               "vocabularyId": {
                 "nullable": false,
                 "type": {
@@ -1668,6 +2403,21 @@
               }
             },
             "relations": {
+              "language": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "languageId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Language",
+                  "namespace": "public"
+                }
+              },
               "vocabulary": {
                 "cardinality": "N:1",
                 "on": {
@@ -1686,14 +2436,23 @@
             },
             "storage": {
               "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
                 "id": {
                   "column": "id"
                 },
-                "notes": {
-                  "column": "notes"
+                "languageId": {
+                  "column": "languageId"
+                },
+                "normalizedTranslation": {
+                  "column": "normalizedTranslation"
                 },
                 "translation": {
                   "column": "translation"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
                 },
                 "vocabularyId": {
                   "column": "vocabularyId"
@@ -1714,6 +2473,11 @@
           "table": {
             "course": {
               "columns": {
+                "code": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "default": {
@@ -1737,28 +2501,23 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "isPublished": {
+                "isActive": {
                   "codecId": "pg/bool@1",
                   "default": {
                     "kind": "literal",
-                    "value": false
+                    "value": true
                   },
                   "nativeType": "bool",
+                  "nullable": false
+                },
+                "languageVariantId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
                   "nullable": false
                 },
                 "level": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
-                },
-                "sourceLanguageId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": false
-                },
-                "targetLanguageId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
                   "nullable": false
                 },
                 "title": {
@@ -1776,7 +2535,7 @@
                 {
                   "source": {
                     "columns": [
-                      "sourceLanguageId"
+                      "languageVariantId"
                     ],
                     "namespaceId": "public",
                     "tableName": "course"
@@ -1786,41 +2545,17 @@
                       "id"
                     ],
                     "namespaceId": "public",
-                    "tableName": "language"
-                  }
-                },
-                {
-                  "source": {
-                    "columns": [
-                      "targetLanguageId"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "course"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "language"
+                    "tableName": "languageVariant"
                   }
                 }
               ],
               "indexes": [
                 {
                   "columns": [
-                    "sourceLanguageId"
+                    "languageVariantId"
                   ],
-                  "name": "course_sourceLanguageId_idx_7e7e5b07",
-                  "prefix": "course_sourceLanguageId_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "targetLanguageId"
-                  ],
-                  "name": "course_targetLanguageId_idx_52aefc94",
-                  "prefix": "course_targetLanguageId_idx",
+                  "name": "course_languageVariantId_idx_59b2418f",
+                  "prefix": "course_languageVariantId_idx",
                   "unique": false
                 }
               ],
@@ -1829,10 +2564,22 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "languageVariantId",
+                    "code"
+                  ]
+                }
+              ]
             },
             "exercise": {
               "columns": {
+                "answer": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "default": {
@@ -1856,13 +2603,31 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "isActive": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
                 "lessonId": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "position": {
+                "number": {
                   "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "points": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 10
+                  },
                   "nativeType": "int4",
                   "nullable": false
                 },
@@ -1915,10 +2680,26 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "lessonId",
+                    "number"
+                  ]
+                }
+              ]
             },
             "exerciseOption": {
               "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
                 "exerciseId": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
@@ -1942,12 +2723,22 @@
                   "nativeType": "bool",
                   "nullable": false
                 },
-                "position": {
+                "label": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "number": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "text": {
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "value": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
@@ -1986,7 +2777,14 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "exerciseId",
+                    "number"
+                  ]
+                }
+              ]
             },
             "language": {
               "columns": {
@@ -2002,6 +2800,11 @@
                     "kind": "function"
                   },
                   "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "direction": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "id": {
@@ -2167,6 +2970,11 @@
                 "nativeName": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
+                  "nullable": false
+                },
+                "region": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": true
                 },
                 "updatedAt": {
@@ -2211,12 +3019,237 @@
               "uniques": [
                 {
                   "columns": [
+                    "languageId",
                     "code"
                   ]
                 }
               ]
             },
             "lesson": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "description": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "isActive": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "number": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "title": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "unitId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "unitId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "lesson"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "unit"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "unitId"
+                  ],
+                  "name": "lesson_unitId_idx_be785412",
+                  "prefix": "lesson_unitId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "unitId",
+                    "number"
+                  ]
+                }
+              ]
+            },
+            "lessonVocabulary": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "isRequired": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "lessonId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "position": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "vocabularyId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "lessonId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "lessonVocabulary"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "lesson"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "vocabularyId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "lessonVocabulary"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "vocabulary"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "lessonId"
+                  ],
+                  "name": "lessonVocabulary_lessonId_idx_e358970d",
+                  "prefix": "lessonVocabulary_lessonId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "vocabularyId"
+                  ],
+                  "name": "lessonVocabulary_vocabularyId_idx_b8e9b6e6",
+                  "prefix": "lessonVocabulary_vocabularyId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "lessonId",
+                    "vocabularyId"
+                  ]
+                },
+                {
+                  "columns": [
+                    "lessonId",
+                    "position"
+                  ]
+                }
+              ]
+            },
+            "unit": {
               "columns": {
                 "courseId": {
                   "codecId": "pg/int4@1",
@@ -2246,16 +3279,16 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "isPublished": {
+                "isActive": {
                   "codecId": "pg/bool@1",
                   "default": {
                     "kind": "literal",
-                    "value": false
+                    "value": true
                   },
                   "nativeType": "bool",
                   "nullable": false
                 },
-                "position": {
+                "number": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": false
@@ -2278,7 +3311,7 @@
                       "courseId"
                     ],
                     "namespaceId": "public",
-                    "tableName": "lesson"
+                    "tableName": "unit"
                   },
                   "target": {
                     "columns": [
@@ -2294,8 +3327,8 @@
                   "columns": [
                     "courseId"
                   ],
-                  "name": "lesson_courseId_idx_12f72d2a",
-                  "prefix": "lesson_courseId_idx",
+                  "name": "unit_courseId_idx_12f72d2a",
+                  "prefix": "unit_courseId_idx",
                   "unique": false
                 }
               ],
@@ -2304,7 +3337,14 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "courseId",
+                    "number"
+                  ]
+                }
+              ]
             },
             "user": {
               "columns": {
@@ -2336,6 +3376,11 @@
                   "nativeType": "text",
                   "nullable": true
                 },
+                "passwordHash": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
@@ -2363,6 +3408,140 @@
                 {
                   "columns": [
                     "username"
+                  ]
+                }
+              ]
+            },
+            "userCourse": {
+              "columns": {
+                "completedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "courseId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "progress": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "startedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "active"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "userCourse"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "courseId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "userCourse"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "course"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "courseId"
+                  ],
+                  "name": "userCourse_courseId_idx_12f72d2a",
+                  "prefix": "userCourse_courseId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "userCourse_userId_idx_a489d58a",
+                  "prefix": "userCourse_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "userId",
+                    "courseId"
                   ]
                 }
               ]
@@ -2471,6 +3650,129 @@
               },
               "uniques": []
             },
+            "userExerciseAttempt": {
+              "columns": {
+                "answer": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "attemptedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "exerciseId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "isCorrect": {
+                  "codecId": "pg/bool@1",
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "score": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "userExerciseAttempt"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "exerciseId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "userExerciseAttempt"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "exercise"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "exerciseId"
+                  ],
+                  "name": "userExerciseAttempt_exerciseId_idx_3c45a784",
+                  "prefix": "userExerciseAttempt_exerciseId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "userExerciseAttempt_userId_idx_a489d58a",
+                  "prefix": "userExerciseAttempt_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "userLanguage": {
               "columns": {
                 "createdAt": {
@@ -2568,13 +3870,18 @@
             },
             "userLessonProgress": {
               "columns": {
-                "completed": {
-                  "codecId": "pg/bool@1",
+                "completedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
                   "default": {
-                    "kind": "literal",
-                    "value": false
+                    "expression": "now()",
+                    "kind": "function"
                   },
-                  "nativeType": "bool",
+                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "id": {
@@ -2598,6 +3905,29 @@
                     "value": 0
                   },
                   "nativeType": "int4",
+                  "nullable": false
+                },
+                "score": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "startedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "not_started"
+                  },
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "updatedAt": {
@@ -2668,7 +3998,14 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "userId",
+                    "lessonId"
+                  ]
+                }
+              ]
             },
             "userVocabularyProgress": {
               "columns": {
@@ -2679,6 +4016,15 @@
                     "value": 0
                   },
                   "nativeType": "int4",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "id": {
@@ -2704,21 +4050,21 @@
                   "nativeType": "timestamptz",
                   "nullable": true
                 },
-                "mastery": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "kind": "literal",
-                    "value": 0
-                  },
-                  "nativeType": "int4",
-                  "nullable": false
-                },
                 "nextReviewAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
                   "nullable": true
                 },
-                "reviewCount": {
+                "status": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "learning"
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "strength": {
                   "codecId": "pg/int4@1",
                   "default": {
                     "kind": "literal",
@@ -2800,10 +4146,22 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "userId",
+                    "vocabularyId"
+                  ]
+                }
+              ]
             },
             "vocabulary": {
               "columns": {
+                "audioUrl": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "default": {
@@ -2827,9 +4185,19 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "lessonId": {
+                "imageUrl": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "languageId": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
+                  "nullable": false
+                },
+                "normalizedWord": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "partOfSpeech": {
@@ -2838,11 +4206,6 @@
                   "nullable": true
                 },
                 "pronunciation": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
-                },
-                "transliteration": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
@@ -2862,7 +4225,7 @@
                 {
                   "source": {
                     "columns": [
-                      "lessonId"
+                      "languageId"
                     ],
                     "namespaceId": "public",
                     "tableName": "vocabulary"
@@ -2872,17 +4235,17 @@
                       "id"
                     ],
                     "namespaceId": "public",
-                    "tableName": "lesson"
+                    "tableName": "language"
                   }
                 }
               ],
               "indexes": [
                 {
                   "columns": [
-                    "lessonId"
+                    "languageId"
                   ],
-                  "name": "vocabulary_lessonId_idx_e358970d",
-                  "prefix": "vocabulary_lessonId_idx",
+                  "name": "vocabulary_languageId_idx_7aa66047",
+                  "prefix": "vocabulary_languageId_idx",
                   "unique": false
                 }
               ],
@@ -2891,10 +4254,26 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "languageId",
+                    "normalizedWord"
+                  ]
+                }
+              ]
             },
             "vocabularyTranslation": {
               "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
                 "id": {
                   "codecId": "pg/int4@1",
                   "default": {
@@ -2904,14 +4283,24 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
-                "notes": {
+                "languageId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "normalizedTranslation": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false
                 },
                 "translation": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
                   "nullable": false
                 },
                 "vocabularyId": {
@@ -2936,9 +4325,33 @@
                     "namespaceId": "public",
                     "tableName": "vocabulary"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "languageId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "vocabularyTranslation"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "language"
+                  }
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "languageId"
+                  ],
+                  "name": "vocabularyTranslation_languageId_idx_7aa66047",
+                  "prefix": "vocabularyTranslation_languageId_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "vocabularyId"
@@ -2953,7 +4366,14 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "vocabularyId",
+                    "languageId"
+                  ]
+                }
+              ]
             }
           }
         },
@@ -2961,10 +4381,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "160c92081419813ad81b37e0bd193b53c9707b636788f2a279a64524f66a1bc7"
+    "storageHash": "94554416bdbaa6baa76c54920b6b39f69e478ebb9fa76f82fcedd5beae25ce5f"
   },
   "execution": {
-    "executionHash": "59b501592104e170aa5376ad0af629fa70c101c91b56896a9a58933aef72d81d",
+    "executionHash": "177019c8b6cdaf5eda2b81969ed11c22741ca9be2c491adcfd5835c50181420e",
     "mutations": {
       "defaults": [
         {
@@ -2995,6 +4415,21 @@
             "column": "updatedAt",
             "namespace": "public",
             "table": "exercise"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "exerciseOption"
           }
         },
         {
@@ -3054,6 +4489,36 @@
           "ref": {
             "column": "updatedAt",
             "namespace": "public",
+            "table": "lessonVocabulary"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "unit"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
             "table": "user"
           }
         },
@@ -3069,7 +4534,37 @@
           "ref": {
             "column": "updatedAt",
             "namespace": "public",
+            "table": "userCourse"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
             "table": "userCourseProgress"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "userExerciseAttempt"
           }
         },
         {
@@ -3115,6 +4610,21 @@
             "column": "updatedAt",
             "namespace": "public",
             "table": "vocabulary"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updatedAt",
+            "namespace": "public",
+            "table": "vocabularyTranslation"
           }
         }
       ]

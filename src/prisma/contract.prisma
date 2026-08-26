@@ -5,43 +5,47 @@ model User {
   email     String   @unique
   username  String?  @unique
   name      String?
+  passwordHash String
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
 
   languages       UserLanguage[]
   courseProgress  UserCourseProgress[]
-  lessonProgress  UserLessonProgress[]
-  vocabularyProgress UserVocabularyProgress[]
+  courses              UserCourse[]
+  lessonProgress       UserLessonProgress[]
+  exerciseAttempts     UserExerciseAttempt[]
+  vocabularyProgress   UserVocabularyProgress[]
 }
 
 model Language {
-  id          Int      @id @default(autoincrement())
-  code        String   @unique
-  name        String
-  nativeName  String
-  isActive    Boolean  @default(true)
-  createdAt   TimestamptzString @default(now())
-  updatedAt   temporal.updatedAtString()
-
-  variants        LanguageVariant[]
-  names           LanguageName[]
-  sourceCourses   Course[] @relation("SourceLanguageCourses")
-  targetCourses   Course[] @relation("TargetLanguageCourses")
-  userLanguages   UserLanguage[]
+  id                    Int                      @id @default(autoincrement())
+  code                  String                   @unique
+  name                  String
+  nativeName            String
+  direction             String
+  isActive              Boolean                  @default(true)
+  variants              LanguageVariant[]
+  vocabularies          Vocabulary[]
+  vocabularyTranslations VocabularyTranslation[]
+  createdAt             TimestamptzString        @default(now())
+  updatedAt             temporal.updatedAtString()
 }
 
 model LanguageVariant {
-  id          Int      @id @default(autoincrement())
-  languageId  Int
-  code        String   @unique
-  name        String
-  nativeName  String?
-  description String?
-  isActive    Boolean  @default(true)
-  createdAt   TimestamptzString @default(now())
-  updatedAt   temporal.updatedAtString()
+  id           Int              @id @default(autoincrement())
+  language     Language         @relation(fields: [languageId], references: [id])
+  languageId   Int
+  code         String
+  name         String
+  nativeName   String
+  region       String?
+  description  String?
+  isActive     Boolean          @default(true)
+  courses      Course[]
+  createdAt    TimestamptzString @default(now())
+  updatedAt    temporal.updatedAtString()
 
-  language Language @relation(fields: [languageId], references: [id])
+  @@unique([languageId, code])
 }
 
 model LanguageName {
@@ -65,87 +69,150 @@ model UserLanguage {
 }
 
 model Course {
-  id                 Int      @id @default(autoincrement())
-  sourceLanguageId   Int
-  targetLanguageId   Int
-  title              String
-  description        String?
-  level              String?
-  isPublished        Boolean  @default(false)
-  createdAt          TimestamptzString @default(now())
-  updatedAt          temporal.updatedAtString()
+  id                Int              @id @default(autoincrement())
+  languageVariant   LanguageVariant  @relation(fields: [languageVariantId], references: [id])
+  languageVariantId Int
+  code              String
+  title             String
+  description       String?
+  level             String
+  isActive          Boolean          @default(true)
+  units             Unit[]
+  createdAt         TimestamptzString @default(now())
+  updatedAt         temporal.updatedAtString()
+  enrollments UserCourse[]
 
-  sourceLanguage Language @relation("SourceLanguageCourses", fields: [sourceLanguageId], references: [id])
-  targetLanguage Language @relation("TargetLanguageCourses", fields: [targetLanguageId], references: [id])
-
-  lessons       Lesson[]
-  courseProgress UserCourseProgress[]
+  @@unique([languageVariantId, code])
 }
 
 model Lesson {
-  id          Int      @id @default(autoincrement())
-  courseId    Int
-  title       String
-  description String?
-  position    Int
-  isPublished Boolean  @default(false)
-  createdAt   TimestamptzString @default(now())
-  updatedAt   temporal.updatedAtString()
+  id               Int                @id @default(autoincrement())
+  unit             Unit               @relation(fields: [unitId], references: [id])
+  unitId           Int
+  number           Int
+  title            String
+  description      String?
+  type             String
+  isActive         Boolean            @default(true)
+  exercises        Exercise[]
+  vocabulary       LessonVocabulary[]
+  createdAt        TimestamptzString  @default(now())
+  updatedAt        temporal.updatedAtString()
+  userProgress UserLessonProgress[]
 
-  course Course @relation(fields: [courseId], references: [id])
+  @@unique([unitId, number])
+}
 
-  vocabulary Vocabulary[]
-  exercises  Exercise[]
-  progress   UserLessonProgress[]
+model LessonVocabulary {
+  id           Int              @id @default(autoincrement())
+  lesson       Lesson           @relation(fields: [lessonId], references: [id])
+  lessonId     Int
+  vocabulary   Vocabulary       @relation(fields: [vocabularyId], references: [id])
+  vocabularyId Int
+  position     Int
+  isRequired   Boolean          @default(true)
+  createdAt    TimestamptzString @default(now())
+  updatedAt    temporal.updatedAtString()
+
+  @@unique([lessonId, vocabularyId])
+  @@unique([lessonId, position])
 }
 
 model Vocabulary {
-  id          Int      @id @default(autoincrement())
-  lessonId    Int
-  word        String
-  transliteration String?
-  pronunciation  String?
-  partOfSpeech String?
-  definition  String?
-  createdAt   TimestamptzString @default(now())
-  updatedAt   temporal.updatedAtString()
+  id                    Int                      @id @default(autoincrement())
+  language              Language                 @relation(fields: [languageId], references: [id])
+  languageId            Int
+  word                  String
+  normalizedWord        String
+  pronunciation         String?
+  partOfSpeech          String?
+  definition            String?
+  audioUrl              String?
+  imageUrl              String?
+  translations          VocabularyTranslation[]
+  lessons               LessonVocabulary[]
+  createdAt             TimestamptzString        @default(now())
+  updatedAt             temporal.updatedAtString()
+  progress UserVocabularyProgress[]
 
-  lesson       Lesson @relation(fields: [lessonId], references: [id])
-  translations VocabularyTranslation[]
-  progress     UserVocabularyProgress[]
+  @@unique([languageId, normalizedWord])
 }
 
 model VocabularyTranslation {
-  id            Int      @id @default(autoincrement())
-  vocabularyId  Int
-  translation   String
-  notes         String?
+  id             Int              @id @default(autoincrement())
+  vocabulary     Vocabulary       @relation(fields: [vocabularyId], references: [id])
+  vocabularyId   Int
+  language       Language         @relation(fields: [languageId], references: [id])
+  languageId     Int
+  translation    String
+  normalizedTranslation String
+  createdAt      TimestamptzString @default(now())
+  updatedAt      temporal.updatedAtString()
 
-  vocabulary Vocabulary @relation(fields: [vocabularyId], references: [id])
+  @@unique([vocabularyId, languageId])
 }
 
 model Exercise {
-  id          Int      @id @default(autoincrement())
+  id          Int               @id @default(autoincrement())
+  lesson      Lesson            @relation(fields: [lessonId], references: [id])
   lessonId    Int
+  number      Int
   type        String
-  question    String
+  question   String
   explanation String?
-  position    Int
+  answer      String?
+  points      Int               @default(10)
+  isActive    Boolean           @default(true)
+  options     ExerciseOption[]
   createdAt   TimestamptzString @default(now())
   updatedAt   temporal.updatedAtString()
+  attempts UserExerciseAttempt[]
 
-  lesson  Lesson @relation(fields: [lessonId], references: [id])
-  options ExerciseOption[]
+  @@unique([lessonId, number])
 }
 
 model ExerciseOption {
-  id         Int      @id @default(autoincrement())
+  id         Int              @id @default(autoincrement())
+  exercise   Exercise         @relation(fields: [exerciseId], references: [id])
   exerciseId Int
-  text       String
-  isCorrect  Boolean  @default(false)
-  position   Int
+  value      String
+  label      String?
+  isCorrect  Boolean          @default(false)
+  number     Int
+  createdAt  TimestamptzString @default(now())
+  updatedAt  temporal.updatedAtString()
 
-  exercise Exercise @relation(fields: [exerciseId], references: [id])
+  @@unique([exerciseId, number])
+}
+
+model UserExerciseAttempt {
+  id          Int              @id @default(autoincrement())
+  user        User             @relation(fields: [userId], references: [id])
+  userId      Int
+  exercise    Exercise         @relation(fields: [exerciseId], references: [id])
+  exerciseId  Int
+  answer      String?
+  isCorrect   Boolean
+  score       Int              @default(0)
+  attemptedAt TimestamptzString @default(now())
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+}
+
+model UserCourse {
+  id           Int              @id @default(autoincrement())
+  user         User             @relation(fields: [userId], references: [id])
+  userId       Int
+  course       Course           @relation(fields: [courseId], references: [id])
+  courseId     Int
+  status       String           @default("active")
+  progress     Int              @default(0)
+  startedAt    TimestamptzString @default(now())
+  completedAt  TimestamptzString?
+  createdAt    TimestamptzString @default(now())
+  updatedAt    temporal.updatedAtString()
+
+  @@unique([userId, courseId])
 }
 
 model UserCourseProgress {
@@ -161,29 +228,51 @@ model UserCourseProgress {
 }
 
 model UserLessonProgress {
-  id          Int      @id @default(autoincrement())
+  id          Int              @id @default(autoincrement())
+  user        User             @relation(fields: [userId], references: [id])
   userId      Int
+  lesson      Lesson           @relation(fields: [lessonId], references: [id])
   lessonId    Int
-  progress    Int      @default(0)
-  completed   Boolean  @default(false)
+  status      String           @default("not_started")
+  progress    Int              @default(0)
+  score       Int              @default(0)
+  startedAt   TimestamptzString?
+  completedAt TimestamptzString?
+  createdAt   TimestamptzString @default(now())
   updatedAt   temporal.updatedAtString()
 
-  user   User   @relation(fields: [userId], references: [id])
-  lesson Lesson @relation(fields: [lessonId], references: [id])
+  @@unique([userId, lessonId])
 }
 
 model UserVocabularyProgress {
-  id             Int      @id @default(autoincrement())
+  id             Int              @id @default(autoincrement())
+  user           User             @relation(fields: [userId], references: [id])
   userId         Int
+  vocabulary     Vocabulary       @relation(fields: [vocabularyId], references: [id])
   vocabularyId   Int
-  mastery        Int      @default(0)
-  reviewCount    Int      @default(0)
-  correctCount   Int      @default(0)
-  incorrectCount Int      @default(0)
+  status         String           @default("learning")
+  strength       Int              @default(0)
+  correctCount   Int              @default(0)
+  incorrectCount Int              @default(0)
   lastReviewedAt TimestamptzString?
   nextReviewAt   TimestamptzString?
+  createdAt      TimestamptzString @default(now())
   updatedAt      temporal.updatedAtString()
 
-  user       User       @relation(fields: [userId], references: [id])
-  vocabulary Vocabulary @relation(fields: [vocabularyId], references: [id])
+  @@unique([userId, vocabularyId])
+}
+
+model Unit {
+  id          Int              @id @default(autoincrement())
+  course      Course           @relation(fields: [courseId], references: [id])
+  courseId    Int
+  number      Int
+  title       String
+  description String?
+  isActive    Boolean          @default(true)
+  lessons     Lesson[]
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@unique([courseId, number])
 }
