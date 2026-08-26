@@ -3,19 +3,187 @@
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
-  username  String?
+  username  String?  @unique
   name      String?
-  posts     Post[]
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
+
+  languages       UserLanguage[]
+  courseProgress  UserCourseProgress[]
+  lessonProgress  UserLessonProgress[]
+  vocabularyProgress UserVocabularyProgress[]
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  Int
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+model Language {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  name        String
+  nativeName  String
+  isActive    Boolean  @default(true)
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  variants        LanguageVariant[]
+  names           LanguageName[]
+  sourceCourses   Course[] @relation("SourceLanguageCourses")
+  targetCourses   Course[] @relation("TargetLanguageCourses")
+  userLanguages   UserLanguage[]
+}
+
+model LanguageVariant {
+  id          Int      @id @default(autoincrement())
+  languageId  Int
+  code        String   @unique
+  name        String
+  nativeName  String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  language Language @relation(fields: [languageId], references: [id])
+}
+
+model LanguageName {
+  id          Int      @id @default(autoincrement())
+  languageId  Int
+  locale      String
+  name        String
+
+  language Language @relation(fields: [languageId], references: [id])
+}
+
+model UserLanguage {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  languageId Int
+  role        String
+  createdAt   TimestamptzString @default(now())
+
+  user     User     @relation(fields: [userId], references: [id])
+  language Language @relation(fields: [languageId], references: [id])
+}
+
+model Course {
+  id                 Int      @id @default(autoincrement())
+  sourceLanguageId   Int
+  targetLanguageId   Int
+  title              String
+  description        String?
+  level              String?
+  isPublished        Boolean  @default(false)
+  createdAt          TimestamptzString @default(now())
+  updatedAt          temporal.updatedAtString()
+
+  sourceLanguage Language @relation("SourceLanguageCourses", fields: [sourceLanguageId], references: [id])
+  targetLanguage Language @relation("TargetLanguageCourses", fields: [targetLanguageId], references: [id])
+
+  lessons       Lesson[]
+  courseProgress UserCourseProgress[]
+}
+
+model Lesson {
+  id          Int      @id @default(autoincrement())
+  courseId    Int
+  title       String
+  description String?
+  position    Int
+  isPublished Boolean  @default(false)
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  course Course @relation(fields: [courseId], references: [id])
+
+  vocabulary Vocabulary[]
+  exercises  Exercise[]
+  progress   UserLessonProgress[]
+}
+
+model Vocabulary {
+  id          Int      @id @default(autoincrement())
+  lessonId    Int
+  word        String
+  transliteration String?
+  pronunciation  String?
+  partOfSpeech String?
+  definition  String?
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  lesson       Lesson @relation(fields: [lessonId], references: [id])
+  translations VocabularyTranslation[]
+  progress     UserVocabularyProgress[]
+}
+
+model VocabularyTranslation {
+  id            Int      @id @default(autoincrement())
+  vocabularyId  Int
+  translation   String
+  notes         String?
+
+  vocabulary Vocabulary @relation(fields: [vocabularyId], references: [id])
+}
+
+model Exercise {
+  id          Int      @id @default(autoincrement())
+  lessonId    Int
+  type        String
+  question    String
+  explanation String?
+  position    Int
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  lesson  Lesson @relation(fields: [lessonId], references: [id])
+  options ExerciseOption[]
+}
+
+model ExerciseOption {
+  id         Int      @id @default(autoincrement())
+  exerciseId Int
+  text       String
+  isCorrect  Boolean  @default(false)
+  position   Int
+
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+}
+
+model UserCourseProgress {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  courseId    Int
+  progress    Int      @default(0)
+  completed   Boolean  @default(false)
+  updatedAt   temporal.updatedAtString()
+
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+}
+
+model UserLessonProgress {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  lessonId    Int
+  progress    Int      @default(0)
+  completed   Boolean  @default(false)
+  updatedAt   temporal.updatedAtString()
+
+  user   User   @relation(fields: [userId], references: [id])
+  lesson Lesson @relation(fields: [lessonId], references: [id])
+}
+
+model UserVocabularyProgress {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  vocabularyId   Int
+  mastery        Int      @default(0)
+  reviewCount    Int      @default(0)
+  correctCount   Int      @default(0)
+  incorrectCount Int      @default(0)
+  lastReviewedAt TimestamptzString?
+  nextReviewAt   TimestamptzString?
+  updatedAt      temporal.updatedAtString()
+
+  user       User       @relation(fields: [userId], references: [id])
+  vocabulary Vocabulary @relation(fields: [vocabularyId], references: [id])
 }
