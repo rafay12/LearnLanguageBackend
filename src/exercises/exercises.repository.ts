@@ -18,4 +18,8 @@ export class ExercisesRepository {
   findOptions(exerciseId: number) {
     return db.orm.public.ExerciseOption.where({ exerciseId }).all();
   }
+
+  findWithOptions(id: number) {
+    return db.orm.public.Exercise.first({ id });
+  }
 }
