@@ -19,9 +19,13 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string) {
+    if (!email || !password) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
     const user = await this.repository.findByEmail(email);
 
-    if (!user) {
+    if (!user || !user.passwordHash) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
@@ -33,7 +37,7 @@ export class AuthService {
 
     return user;
   }
-
+  
   async login(dto: LoginDto) {
     const user = await this.validateUser(dto.email, dto.password);
 

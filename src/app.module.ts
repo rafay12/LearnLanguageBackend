@@ -14,6 +14,7 @@ import { LessonVocabularyModule } from './lesson-vocabulary/lesson-vocabulary.mo
 import { EnrollmentsModule } from './enrollments/enrollments.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { LessonProgressModule } from './lesson-progress/lesson-progress.module.js';
+import { ExerciseAttemptsModule } from './exercise-attempts/exercise-attempts.module.js';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { LessonProgressModule } from './lesson-progress/lesson-progress.module.j
     EnrollmentsModule,
     AuthModule,
     LessonProgressModule,
+    ExerciseAttemptsModule,
   ],
 })
 export class AppModule {}
